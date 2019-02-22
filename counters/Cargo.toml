@@ -1,9 +1,14 @@
 [package]
 name = "counters"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simple utility to count events for debugging purposes."
 authors = ["Nicolas Silva <nical@fastmail.com>"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 
+[features]
+serialization = ["serde"]
+noop = []
+
 [dependencies]
+serde = {version = "1.0", optional = true, features = ["serde_derive"] }
