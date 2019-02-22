@@ -2,8 +2,12 @@ use std::io;
 use std::collections::HashMap;
 use std::cell::RefCell;
 
-use crate::filter::Filter;
+use crate::filters::Filter;
 
+/// Helper to count events for debugging purposes.
+///
+/// `Counters` uses internal mutability to allow updating events without
+/// requiring unique ownership or mutable countexts.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct Counters {

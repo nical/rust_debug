@@ -1,5 +1,5 @@
 use std::io;
-use crate::filter::Filter;
+use crate::filters::Filter;
 
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
@@ -16,4 +16,14 @@ impl Counters {
     pub fn accumulate<F: Filter>(&self, _filter: F) -> u64 { 0 }
     pub fn print<F: Filter>(&self, _filter: F, _out: &mut io::Write) -> io::Result<()> { Ok(()) }
     pub fn print_to_stdout<F: Filter>(&self, _filter: F) {}
+}
+
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+pub struct Table;
+
+impl Table {
+    pub fn new<Label>(_labels: &[Label]) -> Self where Label: ToString { Table }
+    pub fn add_row(&self, _row: &Counters) -> usize { 0 }
+    pub fn print(&self, _to: &mut io::Write) -> io::Result<()> { Ok(()) }
+    pub fn print_to_stdout(&self) {}
 }
