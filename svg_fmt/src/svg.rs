@@ -207,6 +207,10 @@ pub fn polygon<T: Copy + Into<[f32; 2]>>(pts: &[T]) ->  Polygon {
     }
 }
 
+pub fn triangle(x1: f32, y1: f32, x2: f32, y2: f32, x3: f32, y3: f32) -> Polygon {
+    polygon(&[[x1, y1], [x2, y2], [x3, y3]])
+}
+
 impl Polygon {
     pub fn open(mut self) -> Self {
         self.closed = false;
