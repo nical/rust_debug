@@ -351,9 +351,9 @@ pub enum Align {
 impl fmt::Debug for Align {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Align::Left => write!(f, "text-align:left"),
-            Align::Right => write!(f, "text-align:right"),
-            Align::Center => write!(f, "text-align:center"),
+            Align::Left => write!(f, "text-anchor:start;text-align:left;"),
+            Align::Right => write!(f, "text-anchor:end;text-align:right;"),
+            Align::Center => write!(f, "text-anchor:middle;text-align:center;"),
         }
     }
 }

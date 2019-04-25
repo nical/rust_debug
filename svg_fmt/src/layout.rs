@@ -21,7 +21,7 @@ impl VerticalLayout {
     }
 
     pub fn push_rectangle(&mut self, height: f32) -> Rectangle {
-        let rect = rectangle(self.start[0], self.y, self.width, self.y + height);
+        let rect = rectangle(self.start[0], self.y, self.width, height);
 
         self.y += height;
 
@@ -31,7 +31,7 @@ impl VerticalLayout {
     pub fn total_rectangle(&self) -> Rectangle {
         rectangle(
             self.start[0], self.start[1],
-            self.start[0] + self.width, self.y,
+            self.width, self.y,
         )
     }
 
