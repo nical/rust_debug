@@ -26,6 +26,12 @@ pub enum Fill {
     None,
 }
 
+impl Into<Fill> for Color {
+    fn into(self) -> Fill {
+        Fill::Color(self)
+    }
+}
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum Stroke {
     Color(Color, f32),
@@ -71,8 +77,9 @@ pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
 }
 
 impl Rectangle {
-    pub fn fill(mut self, fill: Fill) -> Self {
-        self.fill = fill;
+    pub fn fill<F>(mut self, fill: F) -> Self
+    where F: Into<Fill> {
+        self.fill = fill.into();
         self
     }
 
@@ -123,8 +130,9 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn fill(mut self, fill: Fill) -> Self {
-        self.fill = fill;
+    pub fn fill<F>(mut self, fill: F) -> Self
+    where F: Into<Fill> {
+        self.fill = fill.into();
         self
     }
 
@@ -199,8 +207,9 @@ impl Polygon {
         self
     }
 
-    pub fn fill(mut self, fill: Fill) -> Self {
-        self.fill = fill;
+    pub fn fill<F>(mut self, fill: F) -> Self
+    where F: Into<Fill> {
+        self.fill = fill.into();
         self
     }
 
@@ -337,7 +346,7 @@ fn foo() {
     println!("{:?}", BeginSvg { w: 800.0, h: 600.0 });
     println!("    {:?}",
         rectangle(20.0, 50.0, 200.0, 100.0)
-            .fill(Fill::Color(red()))
+            .fill(red())
             .stroke(Stroke::Color(black(), 3.0))
             .border_radius(5.0)
     );

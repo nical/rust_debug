@@ -13,7 +13,7 @@ use svg_fmt::*;
 println!("{:?}", BeginSvg { w: 800.0, h: 600.0 });
 println!("    {:?}",
     rectangle(20.0, 50.0, 200.0, 100.0)
-        .fill(Fill::Color(red()))
+        .fill(red())
         .stroke(Stroke::Color(black(), 3.0))
         .border_radius(5.0)
 );
