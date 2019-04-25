@@ -219,6 +219,55 @@ impl Polygon {
     }
 }
 
+#[derive(Copy, Clone, PartialEq)]
+pub struct LineSegment {
+    pub from: [f32; 2],
+    pub to: [f32; 2],
+    pub color: Color,
+    pub width: f32,
+}
+
+impl fmt::Debug for LineSegment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+            r#"<path d="M {} {} L {} {}" style="stroke:{:?};stroke-width:{:?}"/>"#,
+            self.from[0], self.from[1],
+            self.to[0], self.to[1],
+            self.color,
+            self.width,
+        )
+    }
+}
+
+pub fn line_segment(from: [f32; 2], to: [f32; 2]) -> LineSegment {
+    LineSegment {
+        from, to,
+        color: black(),
+        width: 1.0,
+    }
+}
+
+impl LineSegment {
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub fn offset(mut self, dx: f32, dy: f32) -> Self {
+        self.from[0] += dx;
+        self.from[1] += dy;
+        self.to[0] += dx;
+        self.to[1] += dy;
+        self
+    }
+}
+
+
 #[derive(Clone, PartialEq)]
 pub struct Text {
     pub x: f32, pub y: f32,
