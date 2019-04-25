@@ -26,12 +26,6 @@ pub enum Fill {
     None,
 }
 
-impl Into<Fill> for Color {
-    fn into(self) -> Fill {
-        Fill::Color(self)
-    }
-}
-
 #[derive(Copy, Clone, PartialEq)]
 pub enum Stroke {
     Color(Color, f32),
@@ -53,6 +47,18 @@ impl fmt::Debug for Stroke {
             Stroke::Color(color, radius) => write!(f, "stroke:{:?};stroke-width:{:?}", color, radius),
             Stroke::None => write!(f, "stroke:none"),
         }
+    }
+}
+
+impl Into<Fill> for Color {
+    fn into(self) -> Fill {
+        Fill::Color(self)
+    }
+}
+
+impl Into<Stroke> for Color {
+    fn into(self) -> Stroke {
+        Stroke::Color(self, 1.0)
     }
 }
 
