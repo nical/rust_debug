@@ -1,5 +1,6 @@
 use std::fmt;
 
+/// `rgb({r},{g},{b})`
 #[derive(Copy, Clone, PartialEq)]
 pub struct Color {
     pub r: u8,
@@ -20,12 +21,14 @@ pub fn red() -> Color { rgb(255, 0, 0) }
 pub fn green() -> Color { rgb(0, 255, 0) }
 pub fn blue() -> Color { rgb(0, 0, 255) }
 
+/// `fill:{self}`
 #[derive(Copy, Clone, PartialEq)]
 pub enum Fill {
     Color(Color),
     None,
 }
 
+/// `stroke:{self}`
 #[derive(Copy, Clone, PartialEq)]
 pub enum Stroke {
     Color(Color, f32),
@@ -62,6 +65,7 @@ impl Into<Stroke> for Color {
     }
 }
 
+/// `<rect x="{x}" y="{y}" width="{w}" height="{h}" ... />`,
 #[derive(Copy, Clone, PartialEq)]
 pub struct Rectangle {
     pub x: f32,
@@ -126,6 +130,7 @@ impl fmt::Debug for Rectangle {
     }
 }
 
+/// `<circle cx="{x}" cy="{y}" r="{radius}" .../>`
 #[derive(Copy, Clone, PartialEq)]
 pub struct Circle {
     pub x: f32,
@@ -170,6 +175,7 @@ impl fmt::Debug for Circle {
     }
 }
 
+/// `<path d="..." style="..."/>`
 #[derive(Clone, PartialEq)]
 pub struct Polygon {
     pub points: Vec<[f32; 2]>,
@@ -229,6 +235,7 @@ impl Polygon {
     }
 }
 
+/// `<path d="M {x1} {y1} L {x2} {y2}" ... />`
 #[derive(Copy, Clone, PartialEq)]
 pub struct LineSegment {
     pub x1: f32,
@@ -279,7 +286,7 @@ impl LineSegment {
     }
 }
 
-
+/// `<text x="{x}" y="{y}" ... > {text} </text>`
 #[derive(Clone, PartialEq)]
 pub struct Text {
     pub x: f32, pub y: f32,
@@ -335,6 +342,7 @@ impl Text {
     }
 }
 
+/// `text-align:{self}`
 #[derive(Copy, Clone, PartialEq)]
 pub enum Align {
     Left, Right, Center
@@ -350,6 +358,7 @@ impl fmt::Debug for Align {
     }
 }
 
+/// `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {y}">`
 #[derive(Copy, Clone, PartialEq)]
 pub struct BeginSvg {
     pub w: f32,
@@ -366,6 +375,8 @@ impl fmt::Debug for BeginSvg {
     }
 }
 
+
+/// `</svg>`
 #[derive(Copy, Clone, PartialEq)]
 pub struct EndSvg;
 
@@ -375,6 +386,7 @@ impl fmt::Debug for EndSvg {
     }
 }
 
+/// `"    "`
 pub struct Indentation {
     pub n: u32,
 }
