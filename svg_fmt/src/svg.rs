@@ -227,8 +227,10 @@ impl Polygon {
 
 #[derive(Copy, Clone, PartialEq)]
 pub struct LineSegment {
-    pub from: [f32; 2],
-    pub to: [f32; 2],
+    pub x1: f32,
+    pub x2: f32,
+    pub y1: f32,
+    pub y2: f32,
     pub color: Color,
     pub width: f32,
 }
@@ -237,17 +239,17 @@ impl fmt::Debug for LineSegment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
             r#"<path d="M {} {} L {} {}" style="stroke:{:?};stroke-width:{:?}"/>"#,
-            self.from[0], self.from[1],
-            self.to[0], self.to[1],
+            self.x1, self.y1,
+            self.x2, self.y2,
             self.color,
             self.width,
         )
     }
 }
 
-pub fn line_segment(from: [f32; 2], to: [f32; 2]) -> LineSegment {
+pub fn line_segment(x1: f32, y1: f32, x2: f32, y2: f32) -> LineSegment {
     LineSegment {
-        from, to,
+        x1, y1, x2, y2,
         color: black(),
         width: 1.0,
     }
@@ -265,10 +267,10 @@ impl LineSegment {
     }
 
     pub fn offset(mut self, dx: f32, dy: f32) -> Self {
-        self.from[0] += dx;
-        self.from[1] += dy;
-        self.to[0] += dx;
-        self.to[1] += dy;
+        self.x1 += dx;
+        self.y1 += dy;
+        self.x2 += dx;
+        self.y2 += dy;
         self
     }
 }
