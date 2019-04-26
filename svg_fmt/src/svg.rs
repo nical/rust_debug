@@ -35,6 +35,34 @@ pub enum Stroke {
     None,
 }
 
+/// `fill:{fill};stroke:{stroke};fill-opacity:{opacity};`
+#[derive(Copy, Clone, PartialEq)]
+pub struct Style {
+    pub fill: Fill,
+    pub stroke: Stroke,
+    pub opacity: f32,
+}
+
+impl fmt::Debug for Style {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?};{:?};fill-opacity:{};",
+            self.fill,
+            self.stroke,
+            self.opacity,
+        )
+    }
+}
+
+impl Style {
+    pub fn default() -> Self {
+        Style {
+            fill: Fill::Color(black()),
+            stroke: Stroke::None,
+            opacity: 1.0,
+        }
+    }
+}
+
 impl fmt::Debug for Fill {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -72,16 +100,14 @@ pub struct Rectangle {
     pub y: f32,
     pub w: f32,
     pub h: f32,
-    pub fill: Fill,
-    pub stroke: Stroke,
+    pub style: Style,
     pub border_radius: f32,
 }
 
 pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
     Rectangle {
         x, y, w, h,
-        fill: Fill::Color(black()),
-        stroke: Stroke::None,
+        style: Style::default(),
         border_radius: 0.0,
     }
 }
@@ -89,12 +115,23 @@ pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
 impl Rectangle {
     pub fn fill<F>(mut self, fill: F) -> Self
     where F: Into<Fill> {
-        self.fill = fill.into();
+        self.style.fill = fill.into();
         self
     }
 
-    pub fn stroke(mut self, stroke: Stroke) -> Self {
-        self.stroke = stroke;
+    pub fn stroke<S>(mut self, stroke: S) -> Self
+    where S: Into<Stroke> {
+        self.style.stroke = stroke.into();
+        self
+    }
+
+    pub fn opacity(mut self, opacity: f32) -> Self {
+        self.style.opacity = opacity;
+        self
+    }
+
+    pub fn style(mut self, style: Style) -> Self {
+        self.style = style;
         self
     }
 
@@ -121,11 +158,10 @@ impl Rectangle {
 impl fmt::Debug for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{:?};{:?}" />""#,
+            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{:?}" />""#,
             self.x, self.y, self.w, self.h,
             self.border_radius,
-            self.fill,
-            self.stroke,
+            self.style,
         )
     }
 }
@@ -136,21 +172,32 @@ pub struct Circle {
     pub x: f32,
     pub y: f32,
     pub radius: f32,
-    pub fill: Fill,
-    pub stroke: Stroke,
+    pub style: Style,
 }
 
 impl Circle {
     pub fn fill<F>(mut self, fill: F) -> Self
     where F: Into<Fill> {
-        self.fill = fill.into();
+        self.style.fill = fill.into();
         self
     }
 
-    pub fn stroke(mut self, stroke: Stroke) -> Self {
-        self.stroke = stroke;
+    pub fn stroke<S>(mut self, stroke: S) -> Self
+    where S: Into<Stroke> {
+        self.style.stroke = stroke.into();
         self
     }
+
+    pub fn style(mut self, style: Style) -> Self {
+        self.style = style;
+        self
+    }
+
+    pub fn opacity(mut self, opacity: f32) -> Self {
+        self.style.opacity = opacity;
+        self
+    }
+
 
     pub fn offset(mut self, dx: f32, dy: f32) -> Self {
         self.x += dx;
@@ -167,10 +214,9 @@ impl Circle {
 impl fmt::Debug for Circle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-            r#"<circle cx="{}" cy="{}" r="{}" style="{:?};{:?}" />""#,
+            r#"<circle cx="{}" cy="{}" r="{}" style="{:?}" />""#,
             self.x, self.y, self.radius,
-            self.fill,
-            self.stroke,
+            self.style,
         )
     }
 }
@@ -179,9 +225,8 @@ impl fmt::Debug for Circle {
 #[derive(Clone, PartialEq)]
 pub struct Polygon {
     pub points: Vec<[f32; 2]>,
-    pub fill: Fill,
-    pub stroke: Stroke,
     pub closed: bool,
+    pub style: Style,
 }
 
 impl fmt::Debug for Polygon {
@@ -196,7 +241,7 @@ impl fmt::Debug for Polygon {
                 write!(f, "Z")?;
             }
         }
-        write!(f, r#"" style="{:?};{:?}"/>"#, self.fill, self.stroke)
+        write!(f, r#"" style="{:?}"/>"#, self.style)
     }
 }
 
@@ -207,9 +252,8 @@ pub fn polygon<T: Copy + Into<[f32; 2]>>(pts: &[T]) ->  Polygon {
     }
     Polygon {
         points,
-        fill: Fill::Color(black()),
-        stroke: Stroke::None,
         closed: true,
+        style: Style::default(),
     }
 }
 
@@ -225,12 +269,23 @@ impl Polygon {
 
     pub fn fill<F>(mut self, fill: F) -> Self
     where F: Into<Fill> {
-        self.fill = fill.into();
+        self.style.fill = fill.into();
         self
     }
 
-    pub fn stroke(mut self, stroke: Stroke) -> Self {
-        self.stroke = stroke;
+    pub fn stroke<S>(mut self, stroke: S) -> Self
+    where S: Into<Stroke> {
+        self.style.stroke = stroke.into();
+        self
+    }
+
+    pub fn opacity(mut self, opacity: f32) -> Self {
+        self.style.opacity = opacity;
+        self
+    }
+
+    pub fn style(mut self, style: Style) -> Self {
+        self.style = style;
         self
     }
 }

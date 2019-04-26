@@ -2,16 +2,18 @@ use crate::svg::{Rectangle, rectangle};
 
 #[derive(Copy, Clone, Debug)]
 pub struct VerticalLayout {
-    pub start: [f32; 2],
+    pub x: f32,
     pub y: f32,
+    pub start_y: f32,
     pub width: f32,
 }
 
 impl VerticalLayout {
     pub fn new(x: f32, y: f32, width: f32) -> Self {
         VerticalLayout {
-            start: [x, y],
+            x,
             y,
+            start_y: y,
             width,
         }
     }
@@ -21,7 +23,7 @@ impl VerticalLayout {
     }
 
     pub fn push_rectangle(&mut self, height: f32) -> Rectangle {
-        let rect = rectangle(self.start[0], self.y, self.width, height);
+        let rect = rectangle(self.x, self.y, self.width, height);
 
         self.y += height;
 
@@ -30,12 +32,12 @@ impl VerticalLayout {
 
     pub fn total_rectangle(&self) -> Rectangle {
         rectangle(
-            self.start[0], self.start[1],
+            self.x, self.start_y,
             self.width, self.y,
         )
     }
 
     pub fn start_here(&mut self) {
-        self.start[1] = self.y;
+        self.start_y = self.y;
     }
 }
