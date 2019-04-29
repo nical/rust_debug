@@ -341,6 +341,109 @@ impl LineSegment {
     }
 }
 
+/// `<path d="..." />`
+#[derive(Clone, PartialEq)]
+pub struct Path {
+    pub ops: Vec<PathOp>,
+    pub style: Style,
+}
+
+/// `M {} {} L {} {} ...`
+#[derive(Copy, Clone, PartialEq)]
+pub enum PathOp {
+    MoveTo { x: f32, y: f32 },
+    LineTo { x: f32, y: f32 },
+    QuadraticTo { ctrl_x: f32, ctrl_y: f32, x: f32, y: f32 },
+    CubicTo { ctrl1_x: f32, ctrl1_y: f32, ctrl2_x: f32, ctrl2_y: f32, x: f32, y: f32 },
+    Close,
+}
+impl fmt::Display for PathOp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            PathOp::MoveTo { x, y } => write!(f, "M {} {} ", x, y),
+            PathOp::LineTo { x, y } => write!(f, "L {} {} ", x, y),
+            PathOp::QuadraticTo { ctrl_x, ctrl_y, x, y } => write!(f, "Q {} {} {} {} ", ctrl_x, ctrl_y, x, y),
+            PathOp::CubicTo { ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y } => write!(f, "C {} {} {} {} {} {} ", ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y),
+            PathOp::Close => write!(f, "Z "),
+        }
+    }
+}
+
+impl fmt::Display for Path {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, r#"<path d=""#)?;
+        for op in &self.ops {
+            op.fmt(f)?;
+        }
+        write!(f, r#"" style="{}" />"#, self.style)
+    }
+}
+
+impl Path {
+    pub fn move_to(mut self, x: f32, y: f32) -> Self {
+        self.ops.push(PathOp::MoveTo { x, y });
+        self
+    }
+
+    pub fn line_to(mut self, x: f32, y: f32) -> Self {
+        self.ops.push(PathOp::LineTo { x, y });
+        self
+    }
+
+    pub fn quadratic_bezier_to(
+        mut self,
+        ctrl_x: f32, ctrl_y: f32,
+        x: f32, y: f32,
+    ) -> Self {
+        self.ops.push(PathOp::QuadraticTo { ctrl_x, ctrl_y, x, y });
+        self
+    }
+
+    pub fn cubic_bezier_to(
+        mut self,
+        ctrl1_x: f32, ctrl1_y: f32,
+        ctrl2_x: f32, ctrl2_y: f32,
+        x: f32, y: f32,
+    ) -> Self {
+        self.ops.push(PathOp::CubicTo { ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y });
+        self
+    }
+
+    pub fn close(mut self) -> Self {
+        self.ops.push(PathOp::Close);
+        self
+    }
+
+    pub fn fill<F>(mut self, fill: F) -> Self
+    where F: Into<Fill> {
+        self.style.fill = fill.into();
+        self
+    }
+
+    pub fn stroke<S>(mut self, stroke: S) -> Self
+    where S: Into<Stroke> {
+        self.style.stroke = stroke.into();
+        self
+    }
+
+    pub fn opacity(mut self, opacity: f32) -> Self {
+        self.style.opacity = opacity;
+        self
+    }
+
+    pub fn style(mut self, style: Style) -> Self {
+        self.style = style;
+        self
+    }
+}
+
+pub fn path() -> Path {
+    Path {
+        ops: Vec::new(),
+        style: Style::default(),
+    }
+}
+
 /// `<text x="{x}" y="{y}" ... > {text} </text>`
 #[derive(Clone, PartialEq)]
 pub struct Text {
