@@ -8,7 +8,7 @@ pub struct Color {
     pub b: u8,
 }
 
-impl fmt::Debug for Color {
+impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "rgb({},{},{})", self.r, self.g, self.b)
     }
@@ -43,9 +43,9 @@ pub struct Style {
     pub opacity: f32,
 }
 
-impl fmt::Debug for Style {
+impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?};{:?};fill-opacity:{};",
+        write!(f, "{};{};fill-opacity:{};",
             self.fill,
             self.stroke,
             self.opacity,
@@ -63,19 +63,19 @@ impl Style {
     }
 }
 
-impl fmt::Debug for Fill {
+impl fmt::Display for Fill {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Fill::Color(color) => write!(f, "fill:{:?}", color),
+            Fill::Color(color) => write!(f, "fill:{}", color),
             Fill::None => write!(f, "fill:none"),
         }
     }
 }
 
-impl fmt::Debug for Stroke {
+impl fmt::Display for Stroke {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Stroke::Color(color, radius) => write!(f, "stroke:{:?};stroke-width:{:?}", color, radius),
+            Stroke::Color(color, radius) => write!(f, "stroke:{};stroke-width:{}", color, radius),
             Stroke::None => write!(f, "stroke:none"),
         }
     }
@@ -155,10 +155,10 @@ impl Rectangle {
     }
 }
 
-impl fmt::Debug for Rectangle {
+impl fmt::Display for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{:?}" />""#,
+            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />""#,
             self.x, self.y, self.w, self.h,
             self.border_radius,
             self.style,
@@ -211,10 +211,10 @@ impl Circle {
     }
 }
 
-impl fmt::Debug for Circle {
+impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-            r#"<circle cx="{}" cy="{}" r="{}" style="{:?}" />""#,
+            r#"<circle cx="{}" cy="{}" r="{}" style="{}" />""#,
             self.x, self.y, self.radius,
             self.style,
         )
@@ -229,7 +229,7 @@ pub struct Polygon {
     pub style: Style,
 }
 
-impl fmt::Debug for Polygon {
+impl fmt::Display for Polygon {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, r#"<path d="#)?;
         if self.points.len() > 0 {
@@ -241,7 +241,7 @@ impl fmt::Debug for Polygon {
                 write!(f, "Z")?;
             }
         }
-        write!(f, r#"" style="{:?}"/>"#, self.style)
+        write!(f, r#"" style="{}"/>"#, self.style)
     }
 }
 
@@ -301,10 +301,10 @@ pub struct LineSegment {
     pub width: f32,
 }
 
-impl fmt::Debug for LineSegment {
+impl fmt::Display for LineSegment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-            r#"<path d="M {} {} L {} {}" style="stroke:{:?};stroke-width:{:?}"/>"#,
+            r#"<path d="M {} {} L {} {}" style="stroke:{};stroke-width:{}"/>"#,
             self.x1, self.y1,
             self.x2, self.y2,
             self.color,
@@ -351,10 +351,10 @@ pub struct Text {
     pub size: f32,
 }
 
-impl fmt::Debug for Text {
+impl fmt::Display for Text {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-            r#"<text x="{}" y="{}" style="font-size:{}px;fill:{:?};{:?}"> {} </text>"#,
+            r#"<text x="{}" y="{}" style="font-size:{}px;fill:{};{}"> {} </text>"#,
             self.x, self.y,
             self.size,
             self.color,
@@ -403,7 +403,7 @@ pub enum Align {
     Left, Right, Center
 }
 
-impl fmt::Debug for Align {
+impl fmt::Display for Align {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Align::Left => write!(f, "text-anchor:start;text-align:left;"),
@@ -420,7 +420,7 @@ pub struct BeginSvg {
     pub h: f32,
 }
 
-impl fmt::Debug for BeginSvg {
+impl fmt::Display for BeginSvg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
             r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {} {}">"#,
@@ -435,7 +435,7 @@ impl fmt::Debug for BeginSvg {
 #[derive(Copy, Clone, PartialEq)]
 pub struct EndSvg;
 
-impl fmt::Debug for EndSvg {
+impl fmt::Display for EndSvg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "</svg>")
     }
@@ -460,7 +460,7 @@ impl Indentation {
     }
 }
 
-impl fmt::Debug for Indentation {
+impl fmt::Display for Indentation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for _ in 0..self.n {
             write!(f, "    ")?;
@@ -471,13 +471,13 @@ impl fmt::Debug for Indentation {
 
 #[test]
 fn foo() {
-    println!("{:?}", BeginSvg { w: 800.0, h: 600.0 });
-    println!("    {:?}",
+    println!("{}", BeginSvg { w: 800.0, h: 600.0 });
+    println!("    {}",
         rectangle(20.0, 50.0, 200.0, 100.0)
             .fill(red())
             .stroke(Stroke::Color(black(), 3.0))
             .border_radius(5.0)
     );
-    println!("    {:?}", text(25.0, 100.0, "Foo!").size(42.0).color(white()));
-    println!("{:?}", EndSvg);
+    println!("    {}", text(25.0, 100.0, "Foo!").size(42.0).color(white()));
+    println!("{}", EndSvg);
 }
