@@ -1,5 +1,5 @@
 mod svg;
 mod layout;
 
-pub use svg::*;
-pub use layout::*;
+pub use self::svg::*;
+pub use self::layout::*;
