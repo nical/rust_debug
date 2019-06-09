@@ -41,14 +41,16 @@ pub struct Style {
     pub fill: Fill,
     pub stroke: Stroke,
     pub opacity: f32,
+    pub stroke_opacity: f32,
 }
 
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{};{};fill-opacity:{};",
+        write!(f, "{};{};fill-opacity:{};stroke-opacity:{};",
             self.fill,
             self.stroke,
             self.opacity,
+            self.stroke_opacity,
         )
     }
 }
@@ -59,6 +61,7 @@ impl Style {
             fill: Fill::Color(black()),
             stroke: Stroke::None,
             opacity: 1.0,
+            stroke_opacity: 1.0,
         }
     }
 }
@@ -130,6 +133,11 @@ impl Rectangle {
         self
     }
 
+    pub fn stroke_opacity(mut self, opacity: f32) -> Self {
+        self.style.stroke_opacity = opacity;
+        self
+    }
+
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
@@ -198,6 +206,10 @@ impl Circle {
         self
     }
 
+    pub fn stroke_opacity(mut self, opacity: f32) -> Self {
+        self.style.stroke_opacity = opacity;
+        self
+    }
 
     pub fn offset(mut self, dx: f32, dy: f32) -> Self {
         self.x += dx;
@@ -281,6 +293,11 @@ impl Polygon {
 
     pub fn opacity(mut self, opacity: f32) -> Self {
         self.style.opacity = opacity;
+        self
+    }
+
+    pub fn stroke_opacity(mut self, opacity: f32) -> Self {
+        self.style.stroke_opacity = opacity;
         self
     }
 
@@ -428,6 +445,11 @@ impl Path {
 
     pub fn opacity(mut self, opacity: f32) -> Self {
         self.style.opacity = opacity;
+        self
+    }
+
+    pub fn stroke_opacity(mut self, opacity: f32) -> Self {
+        self.style.stroke_opacity = opacity;
         self
     }
 
