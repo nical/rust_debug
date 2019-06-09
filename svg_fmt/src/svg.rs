@@ -500,6 +500,22 @@ impl Text {
     }
 }
 
+pub struct Comment {
+    pub text: String,
+}
+
+pub fn comment<T: Into<String>>(text: T) -> Comment {
+    Comment {
+        text: text.into()
+    }
+}
+
+impl fmt::Display for Comment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<!-- {} -->", self.text)
+    }
+}
+
 /// `text-align:{self}`
 #[derive(Copy, Clone, PartialEq)]
 pub enum Align {
