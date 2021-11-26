@@ -14,12 +14,24 @@ impl fmt::Display for Color {
     }
 }
 
-pub fn rgb(r: u8, g: u8, b: u8) -> Color { Color { r, g, b } }
-pub fn black() -> Color { rgb(0, 0, 0) }
-pub fn white() -> Color { rgb(255, 255, 255) }
-pub fn red() -> Color { rgb(255, 0, 0) }
-pub fn green() -> Color { rgb(0, 255, 0) }
-pub fn blue() -> Color { rgb(0, 0, 255) }
+pub fn rgb(r: u8, g: u8, b: u8) -> Color {
+    Color { r, g, b }
+}
+pub fn black() -> Color {
+    rgb(0, 0, 0)
+}
+pub fn white() -> Color {
+    rgb(255, 255, 255)
+}
+pub fn red() -> Color {
+    rgb(255, 0, 0)
+}
+pub fn green() -> Color {
+    rgb(0, 255, 0)
+}
+pub fn blue() -> Color {
+    rgb(0, 0, 255)
+}
 
 /// `fill:{self}`
 #[derive(Copy, Clone, PartialEq)]
@@ -46,11 +58,10 @@ pub struct Style {
 
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{};{};fill-opacity:{};stroke-opacity:{};",
-            self.fill,
-            self.stroke,
-            self.opacity,
-            self.stroke_opacity,
+        write!(
+            f,
+            "{};{};fill-opacity:{};stroke-opacity:{};",
+            self.fill, self.stroke, self.opacity, self.stroke_opacity,
         )
     }
 }
@@ -109,7 +120,10 @@ pub struct Rectangle {
 
 pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
     Rectangle {
-        x, y, w, h,
+        x,
+        y,
+        w,
+        h,
         style: Style::default(),
         border_radius: 0.0,
     }
@@ -117,13 +131,17 @@ pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
 
 impl Rectangle {
     pub fn fill<F>(mut self, fill: F) -> Self
-    where F: Into<Fill> {
+    where
+        F: Into<Fill>,
+    {
         self.style.fill = fill.into();
         self
     }
 
     pub fn stroke<S>(mut self, stroke: S) -> Self
-    where S: Into<Stroke> {
+    where
+        S: Into<Stroke>,
+    {
         self.style.stroke = stroke.into();
         self
     }
@@ -165,11 +183,10 @@ impl Rectangle {
 
 impl fmt::Display for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />""#,
-            self.x, self.y, self.w, self.h,
-            self.border_radius,
-            self.style,
+            self.x, self.y, self.w, self.h, self.border_radius, self.style,
         )
     }
 }
@@ -185,13 +202,17 @@ pub struct Circle {
 
 impl Circle {
     pub fn fill<F>(mut self, fill: F) -> Self
-    where F: Into<Fill> {
+    where
+        F: Into<Fill>,
+    {
         self.style.fill = fill.into();
         self
     }
 
     pub fn stroke<S>(mut self, stroke: S) -> Self
-    where S: Into<Stroke> {
+    where
+        S: Into<Stroke>,
+    {
         self.style.stroke = stroke.into();
         self
     }
@@ -225,10 +246,10 @@ impl Circle {
 
 impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             r#"<circle cx="{}" cy="{}" r="{}" style="{}" />""#,
-            self.x, self.y, self.radius,
-            self.style,
+            self.x, self.y, self.radius, self.style,
         )
     }
 }
@@ -243,7 +264,7 @@ pub struct Polygon {
 
 impl fmt::Display for Polygon {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, r#"<path d="#)?;
+        write!(f, r#"<path d=""#)?;
         if self.points.len() > 0 {
             write!(f, "M {} {} ", self.points[0][0], self.points[0][1])?;
             for &p in &self.points[1..] {
@@ -257,7 +278,7 @@ impl fmt::Display for Polygon {
     }
 }
 
-pub fn polygon<T: Copy + Into<[f32; 2]>>(pts: &[T]) ->  Polygon {
+pub fn polygon<T: Copy + Into<[f32; 2]>>(pts: &[T]) -> Polygon {
     let mut points = Vec::with_capacity(pts.len());
     for p in pts {
         points.push((*p).into());
@@ -280,13 +301,17 @@ impl Polygon {
     }
 
     pub fn fill<F>(mut self, fill: F) -> Self
-    where F: Into<Fill> {
+    where
+        F: Into<Fill>,
+    {
         self.style.fill = fill.into();
         self
     }
 
     pub fn stroke<S>(mut self, stroke: S) -> Self
-    where S: Into<Stroke> {
+    where
+        S: Into<Stroke>,
+    {
         self.style.stroke = stroke.into();
         self
     }
@@ -320,19 +345,20 @@ pub struct LineSegment {
 
 impl fmt::Display for LineSegment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             r#"<path d="M {} {} L {} {}" style="stroke:{};stroke-width:{}"/>"#,
-            self.x1, self.y1,
-            self.x2, self.y2,
-            self.color,
-            self.width,
+            self.x1, self.y1, self.x2, self.y2, self.color, self.width,
         )
     }
 }
 
 pub fn line_segment(x1: f32, y1: f32, x2: f32, y2: f32) -> LineSegment {
     LineSegment {
-        x1, y1, x2, y2,
+        x1,
+        y1,
+        x2,
+        y2,
         color: black(),
         width: 1.0,
     }
@@ -368,10 +394,28 @@ pub struct Path {
 /// `M {} {} L {} {} ...`
 #[derive(Copy, Clone, PartialEq)]
 pub enum PathOp {
-    MoveTo { x: f32, y: f32 },
-    LineTo { x: f32, y: f32 },
-    QuadraticTo { ctrl_x: f32, ctrl_y: f32, x: f32, y: f32 },
-    CubicTo { ctrl1_x: f32, ctrl1_y: f32, ctrl2_x: f32, ctrl2_y: f32, x: f32, y: f32 },
+    MoveTo {
+        x: f32,
+        y: f32,
+    },
+    LineTo {
+        x: f32,
+        y: f32,
+    },
+    QuadraticTo {
+        ctrl_x: f32,
+        ctrl_y: f32,
+        x: f32,
+        y: f32,
+    },
+    CubicTo {
+        ctrl1_x: f32,
+        ctrl1_y: f32,
+        ctrl2_x: f32,
+        ctrl2_y: f32,
+        x: f32,
+        y: f32,
+    },
     Close,
 }
 impl fmt::Display for PathOp {
@@ -379,8 +423,24 @@ impl fmt::Display for PathOp {
         match *self {
             PathOp::MoveTo { x, y } => write!(f, "M {} {} ", x, y),
             PathOp::LineTo { x, y } => write!(f, "L {} {} ", x, y),
-            PathOp::QuadraticTo { ctrl_x, ctrl_y, x, y } => write!(f, "Q {} {} {} {} ", ctrl_x, ctrl_y, x, y),
-            PathOp::CubicTo { ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y } => write!(f, "C {} {} {} {} {} {} ", ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y),
+            PathOp::QuadraticTo {
+                ctrl_x,
+                ctrl_y,
+                x,
+                y,
+            } => write!(f, "Q {} {} {} {} ", ctrl_x, ctrl_y, x, y),
+            PathOp::CubicTo {
+                ctrl1_x,
+                ctrl1_y,
+                ctrl2_x,
+                ctrl2_y,
+                x,
+                y,
+            } => write!(
+                f,
+                "C {} {} {} {} {} {} ",
+                ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y
+            ),
             PathOp::Close => write!(f, "Z "),
         }
     }
@@ -407,22 +467,33 @@ impl Path {
         self
     }
 
-    pub fn quadratic_bezier_to(
-        mut self,
-        ctrl_x: f32, ctrl_y: f32,
-        x: f32, y: f32,
-    ) -> Self {
-        self.ops.push(PathOp::QuadraticTo { ctrl_x, ctrl_y, x, y });
+    pub fn quadratic_bezier_to(mut self, ctrl_x: f32, ctrl_y: f32, x: f32, y: f32) -> Self {
+        self.ops.push(PathOp::QuadraticTo {
+            ctrl_x,
+            ctrl_y,
+            x,
+            y,
+        });
         self
     }
 
     pub fn cubic_bezier_to(
         mut self,
-        ctrl1_x: f32, ctrl1_y: f32,
-        ctrl2_x: f32, ctrl2_y: f32,
-        x: f32, y: f32,
+        ctrl1_x: f32,
+        ctrl1_y: f32,
+        ctrl2_x: f32,
+        ctrl2_y: f32,
+        x: f32,
+        y: f32,
     ) -> Self {
-        self.ops.push(PathOp::CubicTo { ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x, y });
+        self.ops.push(PathOp::CubicTo {
+            ctrl1_x,
+            ctrl1_y,
+            ctrl2_x,
+            ctrl2_y,
+            x,
+            y,
+        });
         self
     }
 
@@ -432,13 +503,17 @@ impl Path {
     }
 
     pub fn fill<F>(mut self, fill: F) -> Self
-    where F: Into<Fill> {
+    where
+        F: Into<Fill>,
+    {
         self.style.fill = fill.into();
         self
     }
 
     pub fn stroke<S>(mut self, stroke: S) -> Self
-    where S: Into<Stroke> {
+    where
+        S: Into<Stroke>,
+    {
         self.style.stroke = stroke.into();
         self
     }
@@ -469,7 +544,8 @@ pub fn path() -> Path {
 /// `<text x="{x}" y="{y}" ... > {text} </text>`
 #[derive(Clone, PartialEq)]
 pub struct Text {
-    pub x: f32, pub y: f32,
+    pub x: f32,
+    pub y: f32,
     pub text: String,
     pub color: Color,
     pub align: Align,
@@ -478,20 +554,18 @@ pub struct Text {
 
 impl fmt::Display for Text {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             r#"<text x="{}" y="{}" style="font-size:{}px;fill:{};{}"> {} </text>"#,
-            self.x, self.y,
-            self.size,
-            self.color,
-            self.align,
-            self.text,
+            self.x, self.y, self.size, self.color, self.align, self.text,
         )
     }
 }
 
 pub fn text<T: Into<String>>(x: f32, y: f32, txt: T) -> Text {
     Text {
-        x, y,
+        x,
+        y,
         text: txt.into(),
         color: black(),
         align: Align::Left,
@@ -527,9 +601,7 @@ pub struct Comment {
 }
 
 pub fn comment<T: Into<String>>(text: T) -> Comment {
-    Comment {
-        text: text.into()
-    }
+    Comment { text: text.into() }
 }
 
 impl fmt::Display for Comment {
@@ -541,7 +613,9 @@ impl fmt::Display for Comment {
 /// `text-align:{self}`
 #[derive(Copy, Clone, PartialEq)]
 pub enum Align {
-    Left, Right, Center
+    Left,
+    Right,
+    Center,
 }
 
 impl fmt::Display for Align {
@@ -563,14 +637,13 @@ pub struct BeginSvg {
 
 impl fmt::Display for BeginSvg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {} {}">"#,
-            self.w,
-            self.h,
+            self.w, self.h,
         )
     }
 }
-
 
 /// `</svg>`
 #[derive(Copy, Clone, PartialEq)]
@@ -613,12 +686,16 @@ impl fmt::Display for Indentation {
 #[test]
 fn foo() {
     println!("{}", BeginSvg { w: 800.0, h: 600.0 });
-    println!("    {}",
+    println!(
+        "    {}",
         rectangle(20.0, 50.0, 200.0, 100.0)
             .fill(red())
             .stroke(Stroke::Color(black(), 3.0))
             .border_radius(5.0)
     );
-    println!("    {}", text(25.0, 100.0, "Foo!").size(42.0).color(white()));
+    println!(
+        "    {}",
+        text(25.0, 100.0, "Foo!").size(42.0).color(white())
+    );
     println!("{}", EndSvg);
 }
