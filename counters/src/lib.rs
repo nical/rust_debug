@@ -81,14 +81,20 @@
 #[cfg(feature = "serialization")]
 extern crate serde;
 
-#[cfg(not(feature="noop"))] mod counters;
-#[cfg(not(feature="noop"))] pub use crate::counters::*;
+#[cfg(not(feature = "noop"))]
+mod counters;
+#[cfg(not(feature = "noop"))]
+pub use crate::counters::*;
 
-#[cfg(not(feature="noop"))] mod table;
-#[cfg(not(feature="noop"))] pub use crate::table::*;
+#[cfg(not(feature = "noop"))]
+mod table;
+#[cfg(not(feature = "noop"))]
+pub use crate::table::*;
 
-#[cfg(feature="noop")] mod noop;
-#[cfg(feature="noop")] pub use crate::noop::*;
+#[cfg(feature = "noop")]
+mod noop;
+#[cfg(feature = "noop")]
+pub use crate::noop::*;
 
 pub mod filters;
 
@@ -155,5 +161,5 @@ fn noop() {
 
     assert_eq!(counters.get("foo::bar"), 0);
     assert_eq!(counters.get("foo::baz"), 0);
-    assert_eq!(counters.accumulate("foo::"), 0);    
+    assert_eq!(counters.accumulate("foo::"), 0);
 }

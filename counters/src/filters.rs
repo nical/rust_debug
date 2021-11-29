@@ -1,4 +1,3 @@
-
 pub trait Filter {
     fn apply(&mut self, key: &str, value: u64) -> bool;
 }
@@ -6,7 +5,9 @@ pub trait Filter {
 /// Accept all keys
 pub struct All;
 impl Filter for All {
-    fn apply(&mut self, _: &str, _: u64) -> bool { true }
+    fn apply(&mut self, _: &str, _: u64) -> bool {
+        true
+    }
 }
 
 /// Select keys using a callback.

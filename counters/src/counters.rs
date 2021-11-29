@@ -1,6 +1,6 @@
-use std::io;
-use std::collections::HashMap;
 use std::cell::RefCell;
+use std::collections::HashMap;
+use std::io;
 
 use crate::filters::Filter;
 
@@ -11,7 +11,7 @@ use crate::filters::Filter;
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct Counters {
-    events: RefCell<HashMap<String, u64>>
+    events: RefCell<HashMap<String, u64>>,
 }
 
 impl Counters {
@@ -38,7 +38,9 @@ impl Counters {
 
     /// Reset some of the counters to zero.
     pub fn reset_events<F: Filter>(&self, mut filter: F) {
-        self.events.borrow_mut().retain(|key, val| !filter.apply(key, *val));
+        self.events
+            .borrow_mut()
+            .retain(|key, val| !filter.apply(key, *val));
     }
 
     /// Reset all counters to zero.
@@ -48,7 +50,9 @@ impl Counters {
 
     /// Keep some of the counters and throw away the rest.
     pub fn retain<F: Filter>(&self, mut filter: F) {
-        self.events.borrow_mut().retain(|key, val| filter.apply(key, *val));
+        self.events
+            .borrow_mut()
+            .retain(|key, val| filter.apply(key, *val));
     }
 
     /// Get the value of the counter or zero if it does not exist.
@@ -80,7 +84,6 @@ impl Counters {
         Ok(())
     }
 
-
     /// Print the counters to stdout.
     pub fn print_to_stdout<F: Filter>(&self, filter: F) {
         let stdout = io::stdout();
@@ -93,5 +96,5 @@ impl Counters {
         for (key, value) in other.events.borrow_mut().drain() {
             *self.events.borrow_mut().entry(key).or_insert(0) += value;
         }
-    } 
+    }
 }
