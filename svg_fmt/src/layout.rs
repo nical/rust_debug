@@ -1,4 +1,4 @@
-use crate::svg::{Rectangle, rectangle};
+use crate::svg::{rectangle, Rectangle};
 
 #[derive(Copy, Clone, Debug)]
 pub struct VerticalLayout {
@@ -31,10 +31,7 @@ impl VerticalLayout {
     }
 
     pub fn total_rectangle(&self) -> Rectangle {
-        rectangle(
-            self.x, self.start_y,
-            self.width, self.y,
-        )
+        rectangle(self.x, self.start_y, self.width, self.y)
     }
 
     pub fn start_here(&mut self) {
