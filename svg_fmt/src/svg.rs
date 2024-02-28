@@ -185,7 +185,7 @@ impl fmt::Display for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />""#,
+            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />"#,
             self.x, self.y, self.w, self.h, self.border_radius, self.style,
         )
     }
@@ -248,7 +248,7 @@ impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<circle cx="{}" cy="{}" r="{}" style="{}" />""#,
+            r#"<circle cx="{}" cy="{}" r="{}" style="{}" />"#,
             self.x, self.y, self.radius, self.style,
         )
     }
