@@ -185,7 +185,7 @@ impl fmt::Display for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />""#,
+            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />"#,
             self.x, self.y, self.w, self.h, self.border_radius, self.style,
         )
     }
@@ -248,7 +248,7 @@ impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<circle cx="{}" cy="{}" r="{}" style="{}" />""#,
+            r#"<circle cx="{}" cy="{}" r="{}" style="{}" />"#,
             self.x, self.y, self.radius, self.style,
         )
     }
@@ -264,7 +264,7 @@ pub struct Polygon {
 
 impl fmt::Display for Polygon {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, r#"<path d=""#)?;
+        write!(f, r#"<path d="#)?;
         if self.points.len() > 0 {
             write!(f, "M {} {} ", self.points[0][0], self.points[0][1])?;
             for &p in &self.points[1..] {
