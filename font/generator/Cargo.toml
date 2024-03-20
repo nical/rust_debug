@@ -1,0 +1,10 @@
+[package]
+name = "embedded_font_generator"
+version = "0.1.0"
+edition = "2021"
+authors = ["Nicolas Silva"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+png = "0.17.13"
+stb_truetype_rust = "1.26.1"
