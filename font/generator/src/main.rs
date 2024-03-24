@@ -29,7 +29,7 @@ fn main() {
         });
     }
 
-    let num_rows = unsafe {
+    let mut num_rows = unsafe {
         stbtt_BakeFontBitmap(
             font.as_ptr(),
             0,
@@ -45,7 +45,11 @@ fn main() {
 
     assert!(num_rows != 0, "Failed to generate the atlas");
     assert!(num_rows > 0, "The glyphs don't fit in the atlas");
-    let num_rows = num_rows + 8 - (num_rows % 8);
+
+    // Ensure a pixel at coordinate (0, num_rows) is fully opaque it will be used
+    // as a source to display fully opaque shapes.
+    pixels[num_rows as usize * W as usize] = 255;
+    num_rows += 1;
 
     if let Some(output_name) = &output_name {
         if output_name.ends_with(".png") {
@@ -104,7 +108,9 @@ fn generate_code(
     writeln!(output, "pub const ATLAS_WIDTH: u32 = {w};")?;
     writeln!(output, "pub const ATLAS_HEIGHT: u32 = {h};")?;
     writeln!(output, "pub const FONT_HEIGHT: u32 = {FONT_HEIGHT};")?;
+    writeln!(output, "pub const OPAQUE_PIXEL: (u16, u16) = (0, {});", h-1)?;
     writeln!(output, "")?;
+    writeln!(output, "#[derive(Copy, Clone, Debug)]")?;
     writeln!(output, "pub struct GlyphInfo {{")?;
     writeln!(output, "    pub uv0: (u16, u16),")?;
     writeln!(output, "    pub uv1: (u16, u16),")?;
@@ -114,10 +120,14 @@ fn generate_code(
     writeln!(output, "")?;
     writeln!(output, "pub const GLYPH_INFO: &[GlyphInfo] = &[")?;
     for c in char_data {
+        let mut min_x = c.x0.min(c.x1);
+        let mut max_x = c.x0.max(c.x1);
+        let mut min_y = c.y0.min(c.y1);
+        let mut max_y = c.y0.max(c.y1);
         writeln!(
             output,
-            "    GlyphInfo {{ uv0: ({}, {}), uv1: ({}, {}), offset: ({}, {}), x_advance: {} }},",
-            c.x0, c.y0, c.y0, c.y1, c.xoff, c.yoff, c.xadvance
+            "    GlyphInfo {{ uv0: ({min_x}, {min_y}), uv1: ({max_x}, {max_y}), offset: ({}, {}), x_advance: {} }},",
+            c.xoff, c.yoff, c.xadvance
         )?;
     }
     writeln!(output, "];")?;
