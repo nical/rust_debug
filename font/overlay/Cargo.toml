@@ -6,4 +6,6 @@ authors = ["Nicolas Silva"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+bytemuck = "1.15.0"
+wgpu = "0.19.3"
 
