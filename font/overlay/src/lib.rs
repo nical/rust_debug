@@ -9,7 +9,7 @@
 
 pub mod embedded_font;
 pub mod views;
-#[cfg(features="wgpu")] pub mod wgpu;
+#[cfg(feature="wgpu")] pub mod wgpu;
 
 use embedded_font::*;
 use bytemuck::{Pod, Zeroable};

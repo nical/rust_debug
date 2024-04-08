@@ -201,14 +201,14 @@ impl Renderer {
                     format,
                     depth_write_enabled: false,
                     depth_compare: wgpu::CompareFunction::Always,
-                    stencil: wgpu::DepthStencilState::default(),
-                    depth_bias: wgpu::DepthBiasState::default(),
+                    stencil: wgpu::StencilState::default(),
+                    bias: wgpu::DepthBiasState::default(),
                 }
             }),
             multiview: None,
             multisample: wgpu::MultisampleState {
-                sample_count: options.sample_count,
-                .. wgpu::MultisampleState::default(),
+                count: options.sample_count,
+                .. wgpu::MultisampleState::default()
             },
         });
 
@@ -222,6 +222,7 @@ impl Renderer {
             ubo,
             index_count: 0,
             y_flip: options.y_flip,
+            scale: options.scale_factor,
             globals: ShaderGlobals {
                 target_size: (0.0, 0.0),
                 scale: 0.0,
@@ -245,8 +246,8 @@ impl Renderer {
         const VTX_SIZE: usize = size_of::<Vertex>();
         const IDX_SIZE: usize = size_of::<u16>();
 
-        let vbo_len = geometry.vertices.len();
-        let ibo_len = geometry.layers.iter().map(|l| l.indices.len()).sum();
+        let vbo_len = overlay.vertices.len();
+        let ibo_len = overlay.layers.iter().map(|l| l.indices.len()).sum();
 
         let alloc_vbo = self.vbo.as_ref().map(|(_, len)| *len <= vbo_len).unwrap_or(true);
         let alloc_ibo = self.ibo.as_ref().map(|(_, len)| *len <= ibo_len).unwrap_or(true);
@@ -275,17 +276,17 @@ impl Renderer {
             ));
         }
 
-        if !geometry.vertices.is_empty() {
+        if !overlay.vertices.is_empty() {
             queue.write_buffer(
                 &self.vbo.as_ref().unwrap().0,
                 0,
-                bytemuck::cast_slice(&geometry.vertices[..])
+                bytemuck::cast_slice(&overlay.vertices[..])
             );
         }
 
         let mut ibo_byte_offset = 0;
         self.index_count = 0;
-        for layer in &geometry.layers {
+        for layer in &overlay.layers {
             if layer.indices.is_empty() {
                 continue;
             }
@@ -350,6 +351,7 @@ struct ShaderGlobals {
     target_size: (f32, f32),
     scale: f32,
     opacity: f32,
+    y_flip: f32,
 }
 
 fn shader_src() -> String {
