@@ -132,7 +132,7 @@ impl Renderer {
                     resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
                         buffer: &ubo,
                         offset: 0,
-                        size: wgpu::BufferSize::new(16),
+                        size: wgpu::BufferSize::new(32),
                     }),
                 },
                 wgpu::BindGroupEntry {
