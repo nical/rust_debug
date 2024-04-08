@@ -3,27 +3,59 @@ use std::mem::size_of;
 
 use crate::{embedded_font::{ATLAS_HEIGHT, ATLAS_WIDTH}, Vertex};
 
-pub struct StatsRenderer {
-    glyph_atlas_texture: Option<wgpu::Texture>,
+/// Initial parameters for the overlay renderer.
+#[derive(Clone, Debug)]
+pub struct RendererOptions {
+    /// Format of the color target.
+    pub target_format: wgpu::TextureFormat,
+    /// Format of the dept stencil target, if any.
+    pub depth_stencil_format: Option<wgpu::TextureFormat>,
+    /// Number of samples per pixel.
+    pub sample_count: u32,
+    /// Whether to invert the y-coordinate when displaying the overlay.
+    pub y_flip: bool,
+    /// Global scaling factor.
+    pub scale_factor: f32,
+}
+
+impl Default for RendererOptions {
+    fn default() -> Self {
+        RendererOptions {
+            target_format: wgpu::TextureFormat::Rgba8Unorm,
+            depth_stencil_format: None,
+            sample_count: 1,
+            y_flip: true,
+            scale_factor: 1.0,
+        }
+    }
+}
+
+/// Renders an overlay using `wgpu`.
+pub struct Renderer {
+    glyph_atlas_texture: wgpu::Texture,
     bind_group: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
     vbo: Option<(wgpu::Buffer, usize)>,
     ibo: Option<(wgpu::Buffer, usize)>,
     ubo: wgpu::Buffer,
     index_count: u32,
+    y_flip: bool,
+    scale: f32,
     globals: ShaderGlobals,
 }
 
-impl StatsRenderer {
+impl Renderer {
+    /// Constructor.
     pub fn new(
         device: &wgpu::Device,
         queue: &wgpu::Queue,
+        options: &RendererOptions,
     ) -> Self {
         let width = ATLAS_WIDTH;
         let height = width;
 
         let glyph_atlas_texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("Debug font atlas"),
+            label: Some("Debug overlay atlas"),
             dimension: wgpu::TextureDimension::D2,
             size: wgpu::Extent3d {
                 width,
@@ -47,7 +79,6 @@ impl StatsRenderer {
             crate::embedded_font::GLYPH_ATLAS,
             wgpu::ImageDataLayout {
                 offset: 0,
-                // TODO: 256 bytes requirement, may need to pad the texture beforehand.
                 bytes_per_row: Some(width),
                 rows_per_image: None,
             },
@@ -59,7 +90,7 @@ impl StatsRenderer {
         );
 
         let bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("Debug stats"),
+            label: Some("Debug overlay"),
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -87,13 +118,13 @@ impl StatsRenderer {
         let glyph_atlas_view = glyph_atlas_texture.create_view(&Default::default());
 
         let ubo = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Debug stats target size"),
-            contents: bytemuck::cast_slice(&[100.0, 100.0]),
+            label: Some("Debug overlay globals"),
+            contents: bytemuck::cast_slice(&[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
             usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::UNIFORM,
         });
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("Debug stats"),
+            label: Some("Debug overlay"),
             layout: &bgl,
             entries: &[
                 wgpu::BindGroupEntry {
@@ -112,18 +143,18 @@ impl StatsRenderer {
         });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("Debug stats"),
+            label: Some("Debug overlay"),
             bind_group_layouts: &[&bgl],
             push_constant_ranges: &[],
         });
 
         let module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("Debug stats"),
+            label: Some("Debug overlay"),
             source: wgpu::ShaderSource::Wgsl(shader_src().into()),
         });
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("Debug stats mesh"),
+            label: Some("Debug overlay mesh"),
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &module,
@@ -150,7 +181,7 @@ impl StatsRenderer {
                 entry_point: "fs_main",
                 targets: &[
                     Some(wgpu::ColorTargetState {
-                        format: wgpu::TextureFormat::Bgra8Unorm,
+                        format: options.target_format,
                         blend: Some(wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING),
                         write_mask: wgpu::ColorWrites::ALL,
                     })
@@ -165,33 +196,48 @@ impl StatsRenderer {
                 unclipped_depth: false,
                 conservative: false,
             },
-            depth_stencil: None,
+            depth_stencil: options.depth_stencil_format.map(|format| {
+                wgpu::DepthStencilState {
+                    format,
+                    depth_write_enabled: false,
+                    depth_compare: wgpu::CompareFunction::Always,
+                    stencil: wgpu::DepthStencilState::default(),
+                    depth_bias: wgpu::DepthBiasState::default(),
+                }
+            }),
             multiview: None,
-            multisample: wgpu::MultisampleState::default(),
+            multisample: wgpu::MultisampleState {
+                sample_count: options.sample_count,
+                .. wgpu::MultisampleState::default(),
+            },
         });
 
-        StatsRenderer {
-            glyph_atlas_texture: Some(glyph_atlas_texture),
+        Renderer {
+            glyph_atlas_texture,
             bind_group,
             pipeline,
 
             vbo: None,
             ibo: None,
             ubo,
+            index_count: 0,
+            y_flip: options.y_flip,
             globals: ShaderGlobals {
                 target_size: (0.0, 0.0),
                 scale: 0.0,
                 opacity: 0.0,
+                y_flip: 1.0,
             },
-            index_count: 0,
         }
     }
 
+    /// Transfers the overlay information to the GPU.
+    ///
+    /// Must be called once per frame where the overlay is shown, before calling `renderer`.
     pub fn update(
         &mut self,
-        geometry: &crate::DebugGeometry,
+        overlay: &crate::Overlay,
         taregt_size: (u32, u32),
-        scale: f32,
         opacity: f32,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
@@ -208,7 +254,7 @@ impl StatsRenderer {
         if alloc_vbo {
             self.vbo = Some((
                 device.create_buffer(&wgpu::BufferDescriptor {
-                    label: Some("Debug stats vertices"),
+                    label: Some("Debug overlay vertices"),
                     size: (vbo_len * VTX_SIZE) as u64,
                     usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                     mapped_at_creation: false,
@@ -220,7 +266,7 @@ impl StatsRenderer {
         if alloc_ibo {
             self.ibo = Some((
                 device.create_buffer(&wgpu::BufferDescriptor {
-                    label: Some("Debug stats indices"),
+                    label: Some("Debug overlay indices"),
                     size: (ibo_len * IDX_SIZE) as u64,
                     usage: wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST,
                     mapped_at_creation: false,
@@ -256,8 +302,9 @@ impl StatsRenderer {
         let h = taregt_size.1 as f32;
         let globals = ShaderGlobals {
             target_size: (w, h),
-            scale,
+            scale: self.scale,
             opacity,
+            y_flip: if self.y_flip { -1.0 } else { 1.0 },
         };
 
         if self.globals != globals {
@@ -266,11 +313,15 @@ impl StatsRenderer {
                 globals.target_size.1,
                 globals.scale,
                 globals.opacity,
+                globals.y_flip,
             ]));
             self.globals = globals;
         }
     }
 
+    /// Display the overlay in a render pass.
+    ///
+    /// Must be called once per frame where the overlay is shown, after calling `update`.
     pub fn render<'a>(&'a self, pass: &mut wgpu::RenderPass<'a>) {
         if self.index_count == 0 {
             return;
@@ -288,9 +339,9 @@ impl StatsRenderer {
     }
 }
 
-impl Drop for StatsRenderer {
+impl Drop for Renderer {
     fn drop(&mut self) {
-        self.glyph_atlas_texture.take().map(|tex| tex.destroy());
+        self.glyph_atlas_texture.destroy();
     }
 }
 
@@ -304,12 +355,12 @@ struct ShaderGlobals {
 fn shader_src() -> String {
     format!("
 const ATLAS_SIZE: f32 = {ATLAS_WIDTH}.0;
-const TARGET_SIZE: vec2f = vec2f(1200.0, 1000.0); // TODO
 
 struct Globals {{
     target_size: vec2f,
     scale: f32,
     opacity: f32,
+    y_flip: f32,
 }};
 
 @group(0) @binding(0) var<uniform> globals: Globals;
@@ -338,7 +389,7 @@ struct VertexOutput {{
     ) / 255.0;
 
     var screen_pos = ((position * globals.scale) / globals.target_size) * 2.0 - 1.0;
-    screen_pos.y *= -1.0;
+    screen_pos.y *= globals.y_flip;
 
     return VertexOutput(
         vec4f(screen_pos, 0.0, 1.0),

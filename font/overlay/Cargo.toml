@@ -1,11 +1,18 @@
 [package]
-name = "debug_font"
+name = "debug_overlay"
+description = "A basic low-overhead and ascii-only debug overlay that can be displayed using GPU APIs such as wgpu."
 version = "0.1.0"
 edition = "2021"
 authors = ["Nicolas Silva"]
 license = "MIT OR Apache-2.0"
+keywords = ["graphics", "debugging"]
+
+[features]
+wgpu = ["dep:wgpu"]
+wgpu-core = ["dep:wgpu-core"]
 
 [dependencies]
 bytemuck = "1.15.0"
-wgpu = "0.19.3"
+wgpu = { version = "0.19.3", optional = true }
+wgpu-core = { version = "0.19.3", optional = true }
 

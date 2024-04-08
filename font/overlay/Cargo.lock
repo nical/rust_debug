@@ -193,11 +193,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "debug_font"
+name = "debug_overlay"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
  "wgpu",
+ "wgpu-core",
 ]
 
 [[package]]

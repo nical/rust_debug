@@ -1,12 +1,24 @@
+//! A basic low-overhead debugging overlay for use with GPU APIs such as `wgpu`.
+//!
+//! # Features
+//!
+//! Enable one or several or the builtin runderers using the following cargo features:
+//! - `wgpu`
+//! - `wgpu-core` (TODO)
+//!
+
 pub mod embedded_font;
-pub mod renderer;
 pub mod views;
+#[cfg(features="wgpu")] pub mod wgpu;
 
 use embedded_font::*;
 use bytemuck::{Pod, Zeroable};
 
+/// A 2D position (in pixels).
 pub type Position = (f32, f32);
+/// An 8-bit per channel RGBA color value.
 pub type Color = (u8, u8, u8, u8);
+/// The index of an overlay layer.
 pub type Layer = usize;
 
 fn color_to_u32(color: Color) -> u32 {
@@ -28,28 +40,26 @@ pub struct Vertex {
 unsafe impl Pod for Vertex {}
 unsafe impl Zeroable for Vertex {}
 
-pub struct LayerGeometry {
+pub(crate) struct LayerGeometry {
     pub indices: Vec<u16>,
 }
 
-pub struct DebugGeometry {
+pub struct Overlay {
     vertices: Vec<Vertex>,
     layers: Vec<LayerGeometry>,
-    pub line_spacing: f32,
 }
 
-impl DebugGeometry {
-    pub fn new(layer_count: u32) -> Self {
+impl Overlay {
+    pub fn new(layer_count: usize) -> Self {
         let mut layers = Vec::new();
         for _ in 0..layer_count {
             layers.push(LayerGeometry {
                 indices: Vec::new(),
             });
         }
-        DebugGeometry {
+        Overlay {
             vertices: Vec::new(),
             layers,
-            line_spacing: 0.0,
         }
     }
 
@@ -74,7 +84,7 @@ impl DebugGeometry {
         for c in text.chars() {
             if c == '\n' {
                 position.0 = min.0;
-                position.1 += FONT_HEIGHT as f32 + self.line_spacing;
+                position.1 += FONT_HEIGHT as f32;
                 continue;
             }
 

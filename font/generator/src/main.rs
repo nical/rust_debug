@@ -2,7 +2,7 @@ use stb_truetype_rust::{stbtt_BakeFontBitmap, stbtt_bakedchar as BakedChar};
 use std::io::Write;
 
 const FONT_HEIGHT: f32 = 18.0;
-const W: i32 = 128;
+const W: i32 = 256;
 const H: i32 = 128;
 const NUM_CHARS: usize = 96;
 const FIRST_CHAR: i32 = 32;

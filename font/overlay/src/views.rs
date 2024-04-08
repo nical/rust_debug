@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::f32::NAN;
 use std::fmt::Write;
 
-use crate::{Color, DebugGeometry, Layer, Position, FONT_HEIGHT};
+use crate::{Color, Overlay, Layer, Position, FONT_HEIGHT};
 
 pub const BACKGROUND_LAYER: Layer = 0;
 pub const FRONT_LAYER: Layer = 1;
@@ -207,7 +207,7 @@ impl Layout {
         mut origin: Position,
         columns: &[Column],
         rows: &[&dyn Row],
-        output: &mut DebugGeometry
+        output: &mut Overlay
     ) -> (Position, Position) {
         origin.0 += self.style.margin;
         origin.1 += self.style.margin;
@@ -263,7 +263,7 @@ impl Layout {
         &mut self,
         origin: Position,
         text: &str,
-        output: &mut DebugGeometry,
+        output: &mut Overlay,
     ) -> (Position, Position) {
         let p = (
             origin.0 + self.style.margin,
