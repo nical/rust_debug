@@ -120,10 +120,10 @@ fn generate_code(
     writeln!(output, "")?;
     writeln!(output, "pub const GLYPH_INFO: &[GlyphInfo] = &[")?;
     for c in char_data {
-        let mut min_x = c.x0.min(c.x1);
-        let mut max_x = c.x0.max(c.x1);
-        let mut min_y = c.y0.min(c.y1);
-        let mut max_y = c.y0.max(c.y1);
+        let min_x = c.x0.min(c.x1);
+        let max_x = c.x0.max(c.x1);
+        let min_y = c.y0.min(c.y1);
+        let max_y = c.y0.max(c.y1);
         writeln!(
             output,
             "    GlyphInfo {{ uv0: ({min_x}, {min_y}), uv1: ({max_x}, {max_y}), offset: ({}, {}), x_advance: {} }},",

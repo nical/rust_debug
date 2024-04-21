@@ -237,7 +237,7 @@ impl Renderer {
     /// Must be called once per frame where the overlay is shown, before calling `renderer`.
     pub fn update(
         &mut self,
-        overlay: &crate::Overlay,
+        overlay: &crate::OverlayGeometry,
         taregt_size: (u32, u32),
         opacity: f32,
         device: &wgpu::Device,
