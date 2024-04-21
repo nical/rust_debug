@@ -8,8 +8,8 @@
 //!
 
 pub mod embedded_font;
-pub mod table;
-pub mod graph;
+mod table;
+mod graph;
 mod counter;
 #[cfg(feature="wgpu")] pub mod wgpu;
 
@@ -17,6 +17,8 @@ use embedded_font::*;
 use bytemuck::{Pod, Zeroable};
 
 pub use counter::*;
+pub use table::*;
+pub use graph::*;
 
 pub const BACKGROUND_LAYER: Layer = 0;
 pub const FRONT_LAYER: Layer = 1;
