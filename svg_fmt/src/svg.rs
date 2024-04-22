@@ -108,7 +108,7 @@ impl Into<Stroke> for Color {
 }
 
 /// `<rect x="{x}" y="{y}" width="{w}" height="{h}" ... />`,
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Rectangle {
     pub x: f32,
     pub y: f32,
@@ -116,6 +116,7 @@ pub struct Rectangle {
     pub h: f32,
     pub style: Style,
     pub border_radius: f32,
+    pub comment: Option<Comment>,
 }
 
 pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
@@ -126,6 +127,7 @@ pub fn rectangle(x: f32, y: f32, w: f32, h: f32) -> Rectangle {
         h,
         style: Style::default(),
         border_radius: 0.0,
+        comment: None,
     }
 }
 
@@ -179,15 +181,28 @@ impl Rectangle {
         self.h += 2.0 * dy;
         self
     }
+
+    pub fn comment(mut self, text: &str) -> Self {
+        self.comment = Some(comment(text));
+        self
+    }
 }
 
 impl fmt::Display for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />"#,
-            self.x, self.y, self.w, self.h, self.border_radius, self.style,
-        )
+        if let Some(comment) = &self.comment {
+            write!(
+                f,
+                r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}">{}</rect>"#,
+                self.x, self.y, self.w, self.h, self.border_radius, self.style, comment,
+            )
+        } else {
+            write!(
+                f,
+                r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />"#,
+                self.x, self.y, self.w, self.h, self.border_radius, self.style,
+            )
+        }
     }
 }
 
@@ -596,6 +611,7 @@ impl Text {
     }
 }
 
+#[derive(Clone, PartialEq)]
 pub struct Comment {
     pub text: String,
 }
