@@ -190,29 +190,28 @@ impl Rectangle {
 
 impl fmt::Display for Rectangle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}""#,
+            self.x, self.y, self.w, self.h, self.border_radius, self.style,
+        )?;
         if let Some(comment) = &self.comment {
-            write!(
-                f,
-                r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}">{}</rect>"#,
-                self.x, self.y, self.w, self.h, self.border_radius, self.style, comment,
-            )
+            write!(f, r#">{}</rect>"#, comment)?;
         } else {
-            write!(
-                f,
-                r#"<rect x="{}" y="{}" width="{}" height="{}" ry="{}" style="{}" />"#,
-                self.x, self.y, self.w, self.h, self.border_radius, self.style,
-            )
+            write!(f, r#" />"#)?;
         }
+        Ok(())
     }
 }
 
 /// `<circle cx="{x}" cy="{y}" r="{radius}" .../>`
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Circle {
     pub x: f32,
     pub y: f32,
     pub radius: f32,
     pub style: Style,
+    pub comment: Option<Comment>,
 }
 
 impl Circle {
@@ -257,15 +256,26 @@ impl Circle {
         self.radius += by;
         self
     }
+
+    pub fn comment(mut self, text: &str) -> Self {
+        self.comment = Some(comment(text));
+        self
+    }
 }
 
 impl fmt::Display for Circle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<circle cx="{}" cy="{}" r="{}" style="{}" />"#,
+            r#"<circle cx="{}" cy="{}" r="{}" style="{}""#,
             self.x, self.y, self.radius, self.style,
-        )
+        )?;
+        if let Some(comment) = &self.comment {
+            write!(f, r#">{}</circle>"#, comment)?;
+        } else {
+            write!(f, r#" />"#)?;
+        }
+        Ok(())
     }
 }
 
@@ -275,6 +285,7 @@ pub struct Polygon {
     pub points: Vec<[f32; 2]>,
     pub closed: bool,
     pub style: Style,
+    pub comment: Option<Comment>,
 }
 
 impl fmt::Display for Polygon {
@@ -289,7 +300,13 @@ impl fmt::Display for Polygon {
                 write!(f, "Z")?;
             }
         }
-        write!(f, r#"" style="{}"/>"#, self.style)
+        write!(f, r#"" style="{}"#, self.style)?;
+        if let Some(comment) = &self.comment {
+            write!(f, r#">{}</path>"#, comment)?;
+        } else {
+            write!(f, r#" />"#)?;
+        }
+        Ok(())
     }
 }
 
@@ -302,6 +319,7 @@ pub fn polygon<T: Copy + Into<[f32; 2]>>(pts: &[T]) -> Polygon {
         points,
         closed: true,
         style: Style::default(),
+        comment: None,
     }
 }
 
@@ -345,10 +363,15 @@ impl Polygon {
         self.style = style;
         self
     }
+
+    pub fn comment(mut self, text: &str) -> Self {
+        self.comment = Some(comment(text));
+        self
+    }
 }
 
 /// `<path d="M {x1} {y1} L {x2} {y2}" ... />`
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct LineSegment {
     pub x1: f32,
     pub x2: f32,
@@ -356,15 +379,22 @@ pub struct LineSegment {
     pub y2: f32,
     pub color: Color,
     pub width: f32,
+    pub comment: Option<Comment>,
 }
 
 impl fmt::Display for LineSegment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<path d="M {} {} L {} {}" style="stroke:{};stroke-width:{}"/>"#,
-            self.x1, self.y1, self.x2, self.y2, self.color, self.width,
-        )
+            r#"<path d="M {} {} L {} {}" style="stroke:{};stroke-width:{}""#,
+            self.x1, self.y1, self.x2, self.y2, self.color, self.width
+        )?;
+        if let Some(comment) = &self.comment {
+            write!(f, r#">{}</path>"#, comment)?;
+        } else {
+            write!(f, r#" />"#)?;
+        }
+        Ok(())
     }
 }
 
@@ -376,6 +406,7 @@ pub fn line_segment(x1: f32, y1: f32, x2: f32, y2: f32) -> LineSegment {
         y2,
         color: black(),
         width: 1.0,
+        comment: None,
     }
 }
 
@@ -397,6 +428,11 @@ impl LineSegment {
         self.y2 += dy;
         self
     }
+
+    pub fn comment(mut self, text: &str) -> Self {
+        self.comment = Some(comment(text));
+        self
+    }
 }
 
 /// `<path d="..." />`
@@ -404,6 +440,7 @@ impl LineSegment {
 pub struct Path {
     pub ops: Vec<PathOp>,
     pub style: Style,
+    pub comment: Option<Comment>,
 }
 
 /// `M {} {} L {} {} ...`
@@ -467,7 +504,13 @@ impl fmt::Display for Path {
         for op in &self.ops {
             op.fmt(f)?;
         }
-        write!(f, r#"" style="{}" />"#, self.style)
+        write!(f, r#"" style="{}""#, self.style)?;
+        if let Some(comment) = &self.comment {
+            write!(f, r#">{}</path>"#, comment)?;
+        } else {
+            write!(f, r#"/>"#)?;
+        }
+        Ok(())
     }
 }
 
@@ -553,6 +596,7 @@ pub fn path() -> Path {
     Path {
         ops: Vec::new(),
         style: Style::default(),
+        comment: None,
     }
 }
 
@@ -565,15 +609,20 @@ pub struct Text {
     pub color: Color,
     pub align: Align,
     pub size: f32,
+    pub comment: Option<Comment>,
 }
 
 impl fmt::Display for Text {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            r#"<text x="{}" y="{}" style="font-size:{}px;fill:{};{}"> {} </text>"#,
-            self.x, self.y, self.size, self.color, self.align, self.text,
-        )
+            r#"<text x="{}" y="{}" style="font-size:{}px;fill:{};{}">"#,
+            self.x, self.y, self.size, self.color, self.align,
+        )?;
+        if let Some(comment) = &self.comment {
+            write!(f, r#" {}"#, comment)?;
+        }
+        write!(f, r#" {} </text>"#, self.text)
     }
 }
 
@@ -585,6 +634,7 @@ pub fn text<T: Into<String>>(x: f32, y: f32, txt: T) -> Text {
         color: black(),
         align: Align::Left,
         size: 10.0,
+        comment: None,
     }
 }
 
@@ -607,6 +657,11 @@ impl Text {
     pub fn offset(mut self, dx: f32, dy: f32) -> Self {
         self.x += dx;
         self.y += dy;
+        self
+    }
+
+    pub fn comment(mut self, text: &str) -> Self {
+        self.comment = Some(comment(text));
         self
     }
 }
