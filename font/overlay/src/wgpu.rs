@@ -212,6 +212,7 @@ impl Renderer {
                 count: options.sample_count,
                 .. wgpu::MultisampleState::default()
             },
+            cache: None,
         });
 
         Renderer {
