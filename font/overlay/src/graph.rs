@@ -1,6 +1,6 @@
 use std::f32::NAN;
 
-use crate::{FRONT_LAYER, Color, Counter, Layer, Orientation, Overlay, OverlayItem, Point};
+use crate::{Color, Counter, Layer, Orientation, Overlay, OverlayItem, Point, FRONT_LAYER};
 
 pub struct Graph<'a> {
     pub color: Color,
@@ -30,7 +30,13 @@ impl<'a> OverlayItem for Graph<'a> {
             }
         });
 
-        let rect = (origin, Point { x: origin.x + w, y: origin.y + h });
+        let rect = (
+            origin,
+            Point {
+                x: origin.x + w,
+                y: origin.y + h,
+            },
+        );
 
         draw_graph(
             FRONT_LAYER,
@@ -39,7 +45,7 @@ impl<'a> OverlayItem for Graph<'a> {
             self.reference_value,
             self.color,
             self.orientation,
-            overlay
+            overlay,
         );
 
         rect
@@ -49,7 +55,7 @@ impl<'a> OverlayItem for Graph<'a> {
 pub struct Graphs<'a> {
     pub width: Option<i32>,
     pub height: Option<i32>,
-    pub counters: &'a[&'a Counter],
+    pub counters: &'a [&'a Counter],
     pub reference_value: f32,
     pub orientation: Orientation,
 }
@@ -73,7 +79,13 @@ impl<'a> OverlayItem for Graphs<'a> {
             }
         });
 
-        let rect = (origin, Point { x: origin.x + w, y: origin.y + h });
+        let rect = (
+            origin,
+            Point {
+                x: origin.x + w,
+                y: origin.y + h,
+            },
+        );
 
         draw_graphs(
             FRONT_LAYER,
@@ -81,13 +93,12 @@ impl<'a> OverlayItem for Graphs<'a> {
             self.counters,
             self.reference_value,
             self.orientation,
-            overlay
+            overlay,
         );
 
         rect
     }
 }
-
 
 pub struct GraphStats {
     pub avg: f32,
@@ -104,7 +115,7 @@ pub(crate) fn draw_graph(
     reference_value: f32,
     color: Color,
     orientation: Orientation,
-    overlay: &mut Overlay
+    overlay: &mut Overlay,
 ) -> GraphStats {
     if counter.history().is_none() {
         return GraphStats {
@@ -117,7 +128,16 @@ pub(crate) fn draw_graph(
     }
 
     let rect = if orientation == Orientation::Horizontal {
-        (Point { x :rect.0.y, y: rect.0.x }, Point { x: rect.1.y, y: rect.1.x })
+        (
+            Point {
+                x: rect.0.y,
+                y: rect.0.x,
+            },
+            Point {
+                x: rect.1.y,
+                y: rect.1.x,
+            },
+        )
     } else {
         rect
     };
@@ -129,7 +149,9 @@ pub(crate) fn draw_graph(
     let mut sample_count = 0;
     for val in counter.history().unwrap() {
         total_count += 1;
-        let Some(val) = val else { continue; };
+        let Some(val) = val else {
+            continue;
+        };
         sample_count += 1;
         max = max.max(val);
         min = min.min(val);
@@ -186,10 +208,19 @@ pub(crate) fn draw_graphs(
     counters: &[&Counter],
     reference_value: f32,
     orientation: Orientation,
-    overlay: &mut Overlay
+    overlay: &mut Overlay,
 ) {
     let rect = if orientation == Orientation::Horizontal {
-        (Point {x: rect.0.y, y: rect.0.x }, Point { x: rect.1.y,  y: rect.1.x })
+        (
+            Point {
+                x: rect.0.y,
+                y: rect.0.x,
+            },
+            Point {
+                x: rect.1.y,
+                y: rect.1.x,
+            },
+        )
     } else {
         rect
     };
@@ -207,8 +238,12 @@ pub(crate) fn draw_graphs(
     'outer: loop {
         let mut sample_sum = 0.0;
         for iter in &mut iters {
-            let Some(val) = iter.0.next() else { break 'outer; };
-            let Some(val) = val else { continue; };
+            let Some(val) = iter.0.next() else {
+                break 'outer;
+            };
+            let Some(val) = val else {
+                continue;
+            };
             sample_sum += val;
         }
         total_count += 1;
@@ -231,7 +266,9 @@ pub(crate) fn draw_graphs(
         let mut y0 = rect.1.y;
         let x1 = x0 + w;
         for iter in &mut iters {
-            let Some(val) = iter.0.next() else { break 'outer; };
+            let Some(val) = iter.0.next() else {
+                break 'outer;
+            };
             if let Some(val) = val {
                 let color = iter.1;
                 let y1 = (y0 as f32 - val * y_scale) as i32;

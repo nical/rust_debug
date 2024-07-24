@@ -7,29 +7,38 @@
 //! - `wgpu-core` (TODO)
 //!
 
-pub mod embedded_font;
-mod table;
-mod graph;
 mod counter;
-#[cfg(feature="wgpu")] pub mod wgpu;
+pub mod embedded_font;
+mod graph;
+mod table;
+#[cfg(feature = "wgpu")]
+pub mod wgpu;
+#[cfg(feature = "wgpu-core")]
+pub mod wgpu_core;
 
-use embedded_font::*;
 use bytemuck::{Pod, Zeroable};
+use embedded_font::*;
 
 pub use counter::*;
-pub use table::*;
 pub use graph::*;
+pub use table::*;
 
 pub const BACKGROUND_LAYER: Layer = 0;
 pub const FRONT_LAYER: Layer = 1;
 
 /// A 2D position (in pixels).
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Point { pub x: i32, pub y: i32 }
+pub struct Point {
+    pub x: i32,
+    pub y: i32,
+}
 
 impl From<(f32, f32)> for Point {
     fn from(val: (f32, f32)) -> Self {
-        Point { x: val.0 as i32, y: val.1 as i32 }
+        Point {
+            x: val.0 as i32,
+            y: val.1 as i32,
+        }
     }
 }
 
@@ -41,7 +50,10 @@ impl From<(i32, i32)> for Point {
 
 /// A 2D position (in pixels).
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct PointF { pub x: f32, pub y: f32 }
+pub struct PointF {
+    pub x: f32,
+    pub y: f32,
+}
 
 /// An 8-bit per channel RGBA color value.
 pub type Color = (u8, u8, u8, u8);
@@ -49,10 +61,7 @@ pub type Color = (u8, u8, u8, u8);
 pub type Layer = usize;
 
 fn color_to_u32(color: Color) -> u32 {
-    (color.0 as u32) << 24
-    | (color.1 as u32) << 16
-    | (color.2 as u32) << 8
-    | color.3 as u32
+    (color.0 as u32) << 24 | (color.1 as u32) << 16 | (color.2 as u32) << 8 | color.3 as u32
 }
 
 #[repr(C)]
@@ -132,10 +141,30 @@ impl OverlayGeometry {
             let y1 = y0 + (glyph.uv1.1 - glyph.uv0.1) as i32;
 
             let offset = self.vertices.len() as u16;
-            self.vertices.push(Vertex { x: x0 as f32, y: y0 as f32, uv: uv0x|uv0y, color });
-            self.vertices.push(Vertex { x: x1 as f32, y: y0 as f32, uv: uv1x|uv0y, color });
-            self.vertices.push(Vertex { x: x1 as f32, y: y1 as f32, uv: uv1x|uv1y, color });
-            self.vertices.push(Vertex { x: x0 as f32, y: y1 as f32, uv: uv0x|uv1y, color });
+            self.vertices.push(Vertex {
+                x: x0 as f32,
+                y: y0 as f32,
+                uv: uv0x | uv0y,
+                color,
+            });
+            self.vertices.push(Vertex {
+                x: x1 as f32,
+                y: y0 as f32,
+                uv: uv1x | uv0y,
+                color,
+            });
+            self.vertices.push(Vertex {
+                x: x1 as f32,
+                y: y1 as f32,
+                uv: uv1x | uv1y,
+                color,
+            });
+            self.vertices.push(Vertex {
+                x: x0 as f32,
+                y: y1 as f32,
+                uv: uv0x | uv1y,
+                color,
+            });
             let layer = &mut self.layers[layer];
             for i in [0u16, 1, 2, 0, 2, 3] {
                 layer.indices.push(offset + i);
@@ -168,23 +197,37 @@ impl OverlayGeometry {
         let color1 = color_to_u32(color1);
 
         let offset = self.vertices.len() as u16;
-        self.vertices.push(Vertex { x: x0 as f32, y: y0 as f32, uv, color: color0 });
-        self.vertices.push(Vertex { x: x1 as f32, y: y0 as f32, uv, color: color0 });
-        self.vertices.push(Vertex { x: x1 as f32, y: y1 as f32, uv, color: color1 });
-        self.vertices.push(Vertex { x: x0 as f32, y: y1 as f32, uv, color: color1 });
+        self.vertices.push(Vertex {
+            x: x0 as f32,
+            y: y0 as f32,
+            uv,
+            color: color0,
+        });
+        self.vertices.push(Vertex {
+            x: x1 as f32,
+            y: y0 as f32,
+            uv,
+            color: color0,
+        });
+        self.vertices.push(Vertex {
+            x: x1 as f32,
+            y: y1 as f32,
+            uv,
+            color: color1,
+        });
+        self.vertices.push(Vertex {
+            x: x0 as f32,
+            y: y1 as f32,
+            uv,
+            color: color1,
+        });
         let layer = &mut self.layers[layer];
         for i in [0u16, 1, 2, 0, 2, 3] {
             layer.indices.push(offset + i);
         }
     }
 
-    pub fn push_mesh(
-        &mut self,
-        layer: Layer,
-        vertices: &[PointF],
-        indices: &[u16],
-        color: Color,
-    ) {
+    pub fn push_mesh(&mut self, layer: Layer, vertices: &[PointF], indices: &[u16], color: Color) {
         let uv = (OPAQUE_PIXEL.0 as u32) << 16 | OPAQUE_PIXEL.1 as u32;
         let layer = &mut self.layers[layer];
         self.vertices.reserve(vertices.len());
@@ -221,7 +264,10 @@ pub struct Overlay {
 impl Overlay {
     pub fn new() -> Self {
         let style = Style::default();
-        let cursor = Point { x: style.margin, y: style.margin };
+        let cursor = Point {
+            x: style.margin,
+            y: style.margin,
+        };
         Overlay {
             geometry: OverlayGeometry::new(2),
             style,
@@ -239,7 +285,10 @@ impl Overlay {
     pub fn begin_frame(&mut self) {
         self.geometry.begin_frame();
 
-        self.cursor = Point { x: self.style.margin, y: self.style.margin };
+        self.cursor = Point {
+            x: self.style.margin,
+            y: self.style.margin,
+        };
         self.group_area = (self.cursor, self.cursor);
         self.max_x = 0;
         self.max_y = 0;
@@ -279,7 +328,6 @@ impl Overlay {
         self.group_area.1.x = self.group_area.1.x.max(rect.1.x);
         self.group_area.1.y = self.group_area.1.y.max(rect.1.y);
     }
-
 
     pub fn push_separator(&mut self) {
         if !self.in_group {
@@ -337,13 +385,21 @@ impl Overlay {
 
     pub fn end_group(&mut self) {
         self.in_group = false;
-        if self.group_area.0.x >= self.group_area.1.x
-        || self.group_area.0.y >= self.group_area.1.y {
+        if self.group_area.0.x >= self.group_area.1.x || self.group_area.0.y >= self.group_area.1.y
+        {
             return;
         }
 
-        self.group_area.1.x = self.group_area.1.x.max(self.group_area.0.x + self.style.min_group_width);
-        self.group_area.1.y = self.group_area.1.y.max(self.group_area.0.y + self.style.min_group_height);
+        self.group_area.1.x = self
+            .group_area
+            .1
+            .x
+            .max(self.group_area.0.x + self.style.min_group_width);
+        self.group_area.1.y = self
+            .group_area
+            .1
+            .y
+            .max(self.group_area.0.y + self.style.min_group_height);
 
         self.max_x = self.max_x.max(self.group_area.1.x);
         self.max_y = self.max_y.max(self.group_area.1.y);
@@ -378,15 +434,12 @@ impl<'a> OverlayItem for &'a str {
     fn draw(&self, position: Point, output: &mut Overlay) -> (Point, Point) {
         let p = Point {
             x: position.x,
-            y: position.y + FONT_HEIGHT as i32
+            y: position.y + FONT_HEIGHT as i32,
         };
 
-        output.geometry.push_text(
-            FRONT_LAYER,
-            self,
-            p,
-            output.style.text_color[0],
-        )
+        output
+            .geometry
+            .push_text(FRONT_LAYER, self, p, output.style.text_color[0])
     }
 }
 
@@ -411,14 +464,8 @@ impl Default for Style {
             min_group_width: 0,
             min_group_height: 0,
             column_spacing: 20,
-            background: [
-                (0, 0, 0, 255),
-                (0, 0, 0, 200)
-            ],
-            text_color: [
-                (255, 255, 255, 255),
-                (200, 200, 200, 255),
-            ],
+            background: [(0, 0, 0, 255), (0, 0, 0, 200)],
+            text_color: [(255, 255, 255, 255), (200, 200, 200, 255)],
             title_color: (120, 150, 255, 255),
             highlight_color: (255, 100, 100, 255),
         }

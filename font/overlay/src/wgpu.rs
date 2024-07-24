@@ -1,7 +1,10 @@
-use wgpu::{self, util::DeviceExt};
 use std::mem::size_of;
+use wgpu::{self, util::DeviceExt};
 
-use crate::{embedded_font::{ATLAS_HEIGHT, ATLAS_WIDTH}, Vertex};
+use crate::{
+    embedded_font::{ATLAS_HEIGHT, ATLAS_WIDTH},
+    Vertex,
+};
 
 /// Initial parameters for the overlay renderer.
 #[derive(Clone, Debug)]
@@ -46,11 +49,7 @@ pub struct Renderer {
 
 impl Renderer {
     /// Constructor.
-    pub fn new(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        options: &RendererOptions,
-    ) -> Self {
+    pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, options: &RendererOptions) -> Self {
         let width = ATLAS_WIDTH;
         let height = width;
 
@@ -83,10 +82,10 @@ impl Renderer {
                 rows_per_image: None,
             },
             wgpu::Extent3d {
-                width: width,
+                width,
                 height: ATLAS_HEIGHT,
                 depth_or_array_layers: 1,
-            }
+            },
         );
 
         let bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -111,8 +110,8 @@ impl Renderer {
                         multisampled: false,
                     },
                     count: None,
-                }
-            ]
+                },
+            ],
         });
 
         let glyph_atlas_view = glyph_atlas_texture.create_view(&Default::default());
@@ -139,7 +138,7 @@ impl Renderer {
                     binding: 1,
                     resource: wgpu::BindingResource::TextureView(&glyph_atlas_view),
                 },
-            ]
+            ],
         });
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -173,20 +172,18 @@ impl Renderer {
                             offset: 8,
                             shader_location: 1,
                         },
-                    ]
+                    ],
                 }],
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 module: &module,
                 entry_point: "fs_main",
-                targets: &[
-                    Some(wgpu::ColorTargetState {
-                        format: options.target_format,
-                        blend: Some(wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING),
-                        write_mask: wgpu::ColorWrites::ALL,
-                    })
-                ],
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: options.target_format,
+                    blend: Some(wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             }),
             primitive: wgpu::PrimitiveState {
@@ -198,19 +195,19 @@ impl Renderer {
                 unclipped_depth: false,
                 conservative: false,
             },
-            depth_stencil: options.depth_stencil_format.map(|format| {
-                wgpu::DepthStencilState {
+            depth_stencil: options
+                .depth_stencil_format
+                .map(|format| wgpu::DepthStencilState {
                     format,
                     depth_write_enabled: false,
                     depth_compare: wgpu::CompareFunction::Always,
                     stencil: wgpu::StencilState::default(),
                     bias: wgpu::DepthBiasState::default(),
-                }
-            }),
+                }),
             multiview: None,
             multisample: wgpu::MultisampleState {
                 count: options.sample_count,
-                .. wgpu::MultisampleState::default()
+                ..wgpu::MultisampleState::default()
             },
             cache: None,
         });
@@ -252,8 +249,16 @@ impl Renderer {
         let vbo_len = overlay.vertices.len();
         let ibo_len = overlay.layers.iter().map(|l| l.indices.len()).sum();
 
-        let alloc_vbo = self.vbo.as_ref().map(|(_, len)| *len <= vbo_len).unwrap_or(true);
-        let alloc_ibo = self.ibo.as_ref().map(|(_, len)| *len <= ibo_len).unwrap_or(true);
+        let alloc_vbo = self
+            .vbo
+            .as_ref()
+            .map(|(_, len)| *len <= vbo_len)
+            .unwrap_or(true);
+        let alloc_ibo = self
+            .ibo
+            .as_ref()
+            .map(|(_, len)| *len <= ibo_len)
+            .unwrap_or(true);
 
         if alloc_vbo {
             self.vbo = Some((
@@ -283,7 +288,7 @@ impl Renderer {
             queue.write_buffer(
                 &self.vbo.as_ref().unwrap().0,
                 0,
-                bytemuck::cast_slice(&overlay.vertices[..])
+                bytemuck::cast_slice(&overlay.vertices[..]),
             );
         }
 
@@ -296,7 +301,7 @@ impl Renderer {
             queue.write_buffer(
                 &self.ibo.as_ref().unwrap().0,
                 ibo_byte_offset,
-                bytemuck::cast_slice(&layer.indices[..])
+                bytemuck::cast_slice(&layer.indices[..]),
             );
             ibo_byte_offset += (layer.indices.len() * IDX_SIZE) as u64;
             self.index_count += layer.indices.len() as u32;
@@ -312,13 +317,17 @@ impl Renderer {
         };
 
         if self.globals != globals {
-            queue.write_buffer(&self.ubo, 0, bytemuck::cast_slice(&[
-                globals.target_size.0,
-                globals.target_size.1,
-                globals.scale,
-                globals.opacity,
-                globals.y_flip,
-            ]));
+            queue.write_buffer(
+                &self.ubo,
+                0,
+                bytemuck::cast_slice(&[
+                    globals.target_size.0,
+                    globals.target_size.1,
+                    globals.scale,
+                    globals.opacity,
+                    globals.y_flip,
+                ]),
+            );
             self.globals = globals;
         }
     }
@@ -358,7 +367,8 @@ struct ShaderGlobals {
 }
 
 fn shader_src() -> String {
-    format!("
+    format!(
+        "
 const ATLAS_SIZE: f32 = {ATLAS_WIDTH}.0;
 
 struct Globals {{
@@ -410,5 +420,6 @@ struct VertexOutput {{
     let texel = textureLoad(glyph_atlas, vec2u(uv), 0).r;
     return color * color.a * texel;
 }}
-")
+"
+    )
 }
