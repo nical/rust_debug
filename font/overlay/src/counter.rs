@@ -513,7 +513,7 @@ crate::declare_counters!(wgpu_counters = {
 pub fn update_wgpu_internal_counters(
     counters: &mut Counters,
     ids: wgpu_counters::Ids,
-    values: &wgpu_types::InternalCounters,
+    values: &wgpu::InternalCounters,
 ) {
     pub fn mb(bytes: isize) -> f32 {
         bytes as f32 / 1_000_000.0

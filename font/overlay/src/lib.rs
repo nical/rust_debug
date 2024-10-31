@@ -15,6 +15,8 @@ mod table;
 pub mod wgpu;
 #[cfg(feature = "wgpu-core")]
 pub mod wgpu_core;
+#[cfg(any(feature = "wgpu", feature = "wgpu-core"))]
+mod wgpu_common;
 
 use bytemuck::{Pod, Zeroable};
 use embedded_font::*;
