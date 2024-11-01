@@ -8,6 +8,12 @@ pub struct Color {
     pub b: u8,
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        black()
+    }
+}
+
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "rgb({},{},{})", self.r, self.g, self.b)
@@ -40,11 +46,23 @@ pub enum Fill {
     None,
 }
 
+impl Default for Fill {
+    fn default() -> Self {
+        Fill::None
+    }
+}
+
 /// `stroke:{self}`
 #[derive(Copy, Clone, PartialEq)]
 pub enum Stroke {
     Color(Color, f32),
     None,
+}
+
+impl Default for Stroke {
+    fn default() -> Self {
+        Stroke::Color(black(), 1.0)
+    }
 }
 
 /// `fill:{fill};stroke:{stroke};fill-opacity:{opacity};`
@@ -66,8 +84,8 @@ impl fmt::Display for Style {
     }
 }
 
-impl Style {
-    pub fn default() -> Self {
+impl Default for Style {
+    fn default() -> Self {
         Style {
             fill: Fill::Color(black()),
             stroke: Stroke::None,
