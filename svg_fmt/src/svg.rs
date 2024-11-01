@@ -95,6 +95,26 @@ impl Default for Style {
     }
 }
 
+impl From<Fill> for Style {
+    fn from(fill: Fill) -> Style {
+        Style {
+            fill,
+            stroke: Stroke::None,
+            .. Default::default()
+        }
+    }
+}
+
+impl From<Stroke> for Style {
+    fn from(stroke: Stroke) -> Style {
+        Style {
+            fill: Fill::None,
+            stroke,
+            .. Default::default()
+        }
+    }
+}
+
 impl fmt::Display for Fill {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
