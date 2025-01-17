@@ -50,7 +50,7 @@ impl Renderer {
 
         global.queue_write_texture(
             device,
-            wgpu::ImageCopyTexture {
+            wgpu::TexelCopyTextureInfo {
                 texture: &glyph_atlas_texture,
                 mip_level: 0,
                 origin: wgpu::Origin3d { x: 0, y: 0, z: 0 },
