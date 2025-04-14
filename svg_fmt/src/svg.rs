@@ -1,4 +1,6 @@
-use std::fmt;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
 
 /// `rgb({r},{g},{b})`
 #[derive(Copy, Clone, PartialEq)]
@@ -790,21 +792,4 @@ impl fmt::Display for Indentation {
         }
         Ok(())
     }
-}
-
-#[test]
-fn foo() {
-    println!("{}", BeginSvg { w: 800.0, h: 600.0 });
-    println!(
-        "    {}",
-        rectangle(20.0, 50.0, 200.0, 100.0)
-            .fill(red())
-            .stroke(Stroke::Color(black(), 3.0))
-            .border_radius(5.0)
-    );
-    println!(
-        "    {}",
-        text(25.0, 100.0, "Foo!").size(42.0).color(white())
-    );
-    println!("{}", EndSvg);
 }
