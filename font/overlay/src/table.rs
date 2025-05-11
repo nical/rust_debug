@@ -284,7 +284,7 @@ fn draw_cell_value(
     let unit_str = if unit { counter.descriptor.unit } else { "" };
     overlay.string_buffer.clear();
     let _ = match counter.descriptor.format {
-        Format::Int => write!(overlay.string_buffer, "{val:>5}{unit_str}"),
+        Format::Int => write!(overlay.string_buffer, "{:>5}{unit_str}", val.round() as i64),
         Format::Float => write!(overlay.string_buffer, "{val:>5.2}{unit_str}"),
     };
 
