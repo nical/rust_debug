@@ -1,7 +1,7 @@
 [package]
 name = "debug_overlay"
 description = "A basic low-overhead and ascii-only debug overlay that can be displayed using GPU APIs such as wgpu."
-version = "0.10.0"
+version = "0.11.0"
 edition = "2021"
 authors = ["Nicolas Silva"]
 license = "MIT OR Apache-2.0"
@@ -13,7 +13,7 @@ wgpu = ["dep:wgpu"]
 
 [dependencies]
 bytemuck = "1.15.0"
-wgpu = { version = "26", optional = true }
-wgpu-core = { version = "26", optional = true }
+wgpu = { version = "28", optional = true }
+wgpu-core = { version = "28", optional = true }
 #wgpu = { optional = true, git = "https://github.com/gfx-rs/wgpu.git" }
 #wgpu-core = { optional = true, git = "https://github.com/gfx-rs/wgpu.git" }

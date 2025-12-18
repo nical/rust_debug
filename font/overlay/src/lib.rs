@@ -1,3 +1,5 @@
+#![allow(mismatched_lifetime_syntaxes)]
+
 //! A basic low-overhead debugging overlay for use with GPU APIs such as `wgpu`.
 //!
 //! # Features
